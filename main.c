@@ -26,6 +26,25 @@ static int readline(FILE *fp, char *buf, int size) {
     return 1;
 }
 
+
+// consumes leading whitespace/newlines so the next read lands on real data
+static void skip_blank(FILE *fp) {
+    int c;
+    while ((c = fgetc(fp)) != EOF) {
+        if (c != '\n' && c != '\r' && c != ' ') {
+            ungetc(c, fp);
+            return;
+        }
+    }
+}
+
+// returns how many years the book has been in use relative to the current year
+int getYears(RegistryBib *r) {
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+    int currentYear = tm_info->tm_year + 1900;
+    return
+
 // swaps two records in place using a temporary copy
 void swap(RegistryBib *a, RegistryBib *b) {
     RegistryBib temp = *a;
