@@ -26,7 +26,6 @@ static int readline(FILE *fp, char *buf, int size) {
     return 1;
 }
 
-
 // consumes leading whitespace/newlines so the next read lands on real data
 static void skip_blank(FILE *fp) {
     int c;
@@ -43,7 +42,8 @@ int getYears(RegistryBib *r) {
     time_t t = time(NULL);
     struct tm *tm_info = localtime(&t);
     int currentYear = tm_info->tm_year + 1900;
-    return
+    return currentYear - r->purchasedDate.year;
+}
 
 // swaps two records in place using a temporary copy
 void swap(RegistryBib *a, RegistryBib *b) {
@@ -135,4 +135,98 @@ int scanElem(RegistryBib *arr, int n, FILE *fp) {
         sscanf(buf, "%d", &(arr + i)->available);
     }
     return n;
+}
+
+// prompts the user for n books and writes the raw data to experiment.txt
+void inputToFile(int *n) {
+    FILE *fp = fopen("experiment.txt", "w");
+    if (!fp) return;
+
+    printf("Enter number of books: ");
+    scanf("%d", n);
+    while (getchar() != '\n');
+
+    fprintf(fp, "%d\n", *n);
+
+    RegistryBib temp;
+
+    for (int i = 0; i < *n; i++) {
+        printf("\nBook %d\n", i + 1);
+
+        printf("Author: ");
+        fgets(temp.authorName, 70, stdin);
+        temp.authorName[strcspn(temp.authorName, "\n")] = 0;
+
+        printf("Title: ");
+        fgets(temp.title, 70, stdin);
+        temp.title[strcspn(temp.title, "\n")] = 0;
+
+        printf("Publisher: ");
+        fgets(temp.publisher, 70, stdin);
+        temp.publisher[strcspn(temp.publisher, "\n")] = 0;
+
+        printf("Publishing date (d m y): ");
+        scanf("%d %d %d",
+              &temp.publishingDate.day,
+              &temp.publishingDate.month,
+              &temp.publishingDate.year);
+
+        printf("Purchase date (d m y): ");
+        scanf("%d %d %d",
+              &temp.purchasedDate.day,
+              &temp.purchasedDate.month,
+              &temp.purchasedDate.year);
+
+        printf("Price: ");
+        scanf("%lf", &temp.priceUnit);
+
+        printf("Available (1/0): ");
+        scanf("%d", &temp.available);
+        while (getchar() != '\n');
+
+        fprintf(fp, "%s\n%s\n%s\n",
+                temp.authorName,
+                temp.title,
+                temp.publisher);
+
+        fprintf(fp, "%d %d %d\n",
+                temp.publishingDate.day,
+                temp.publishingDate.month,
+                temp.publishingDate.year);
+
+        fprintf(fp, "%d %d %d\n",
+                temp.purchasedDate.day,
+                temp.purchasedDate.month,
+                temp.purchasedDate.year);
+
+        fprintf(fp, "%.2lf\n%d\n",
+                temp.priceUnit,
+                temp.available);
+    }
+
+    fclose(fp);
+}
+
+// reads experiment.txt and prints its contents to stdout
+void displayFromFile(void) {
+    FILE *fp = fopen("experiment.txt", "r");
+    if (!fp) return;
+
+    int n;
+    fscanf(fp, "%d", &n);
+    while (fgetc(fp) != '\n');
+
+    RegistryBib *arr = malloc(sizeof(RegistryBib) * n);
+    if (!arr) {
+        printf("Memory allocation failed\n");
+        fclose(fp);
+        return;
+    }
+
+    int read = scanElem(arr, n, fp);
+    fclose(fp);
+
+    printElem(arr, read);
+
+    free(arr);
 }
