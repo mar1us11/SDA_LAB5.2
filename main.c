@@ -289,3 +289,60 @@ void copyToExperiment(void) {
     remove("experiment.txt");
     rename("temp.txt", "experiment.txt");
 }
+
+
+// lets the user pick which output file to read, then prints it to stdout
+void readChoice(void) {
+    int choice;
+    printf("Read file: 1-output.txt, 2-experiment.txt: ");
+    scanf("%d", &choice);
+
+    FILE *fp = fopen(choice == 1 ? "output.txt" : "experiment.txt", "r");
+    if (!fp) return;
+
+    int ch;
+    while ((ch = fgetc(fp)) != EOF)
+        putchar(ch);
+
+    fclose(fp);
+}
+
+int main(void) {
+    int n;
+
+    inputToFile(&n);
+    displayFromFile();
+
+    //re-open to load the data into memory for sorting
+    FILE *fp = fopen("experiment.txt", "r");
+    if (!fp) return 1;
+
+    fscanf(fp, "%d", &n);
+    while (fgetc(fp) != '\n');
+
+    RegistryBib *arr = malloc(sizeof(RegistryBib) * n);
+    if (!arr) {
+        printf("Memory allocation failed\n");
+        fclose(fp);
+        return 1;
+    }
+
+    scanElem(arr, n, fp);
+    fclose(fp);
+
+    quickSort(arr, 0, n - 1);
+
+    writeOutput(arr, n);
+    copyToExperiment();
+
+    free(arr);
+
+    int read;
+    printf("Do you want to read a file? (1-yes / 0-no): ");
+    scanf("%d", &read);
+
+    if (read)
+        readChoice();
+
+    return 0;
+}
