@@ -1,3 +1,0 @@
-D:/C_works/sda_lab5.2/cmake-build-debug/CMakeFiles/sda_lab5_2.dir
-D:/C_works/sda_lab5.2/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/C_works/sda_lab5.2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
