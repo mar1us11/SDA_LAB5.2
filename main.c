@@ -230,3 +230,62 @@ void displayFromFile(void) {
 
     free(arr);
 }
+
+
+// writes the sorted records with all fields to output.txt
+void writeOutput(RegistryBib *arr, int n) {
+    FILE *fp = fopen("output.txt", "w");
+    if (!fp) return;
+
+    for (int i = 0; i < n; i++) {
+        RegistryBib *r = arr + i;
+
+        fprintf(fp, "Author: %s\n", r->authorName);
+        fprintf(fp, "Title: %s\n", r->title);
+        fprintf(fp, "Publisher: %s\n", r->publisher);
+
+        fprintf(fp, "Publishing Date: %d/%d/%d\n",
+                r->publishingDate.day,
+                r->publishingDate.month,
+                r->publishingDate.year);
+
+        fprintf(fp, "Purchasing Date: %d/%d/%d\n",
+                r->purchasedDate.day,
+                r->purchasedDate.month,
+                r->purchasedDate.year);
+
+        fprintf(fp, "Years of use: %d\n", getYears(r));
+        fprintf(fp, "Price: %.2lf\n", r->priceUnit);
+        fprintf(fp, "Available: %s\n\n", r->available ? "Yes" : "No");
+    }
+
+    fclose(fp);
+}
+
+/* prepends output.txt to experiment.txt via a temporary file */
+void copyToExperiment(void) {
+    FILE *src = fopen("output.txt", "r");
+    if (!src) return;
+
+    FILE *old = fopen("experiment.txt", "r");
+    if (!old) { fclose(src); return; }
+
+    FILE *temp = fopen("temp.txt", "w");
+    if (!temp) { fclose(src); fclose(old); return; }
+
+    int ch;
+
+    while ((ch = fgetc(src)) != EOF)
+        fputc(ch, temp);
+
+    while ((ch = fgetc(old)) != EOF)
+        fputc(ch, temp);
+
+    fclose(src);
+    fclose(old);
+    fclose(temp);
+
+    // replace experiment.txt with the merged temp file
+    remove("experiment.txt");
+    rename("temp.txt", "experiment.txt");
+}
